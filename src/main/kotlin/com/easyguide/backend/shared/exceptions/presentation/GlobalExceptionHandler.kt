@@ -2,6 +2,7 @@ package com.easyguide.backend.shared.exceptions.presentation
 
 import com.easyguide.backend.shared.exceptions.exception.BasicException
 import com.easyguide.backend.shared.exceptions.exception.ErrorKind
+import com.easyguide.backend.shared.exceptions.exception.FieldsAware
 import com.easyguide.backend.shared.exceptions.presentation.dto.ErrorDto
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.ConstraintViolationException
@@ -12,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 
 @ControllerAdvice
@@ -35,6 +37,7 @@ class GlobalExceptionHandler {
                 ErrorDto(
                     e.message,
                     e.code,
+                    (e as? FieldsAware)?.fields,
                 )
             )
     }
@@ -73,6 +76,19 @@ class GlobalExceptionHandler {
                 ErrorDto(
                     "Тело запроса отсутствует",
                     ErrorKind.VALIDATION
+                )
+            )
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleMaxUploadSizeExceeded(): ResponseEntity<ErrorDto> {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(
+                ErrorDto(
+                    "Файл превышает максимально допустимый размер",
+                    ErrorKind.VALIDATION,
                 )
             )
     }
