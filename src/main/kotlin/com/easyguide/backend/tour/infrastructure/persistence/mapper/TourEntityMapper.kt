@@ -3,6 +3,7 @@ package com.easyguide.backend.tour.infrastructure.persistence.mapper
 import com.easyguide.backend.tour.domain.model.Tour
 import com.easyguide.backend.tour.domain.model.TourPhoto
 import com.easyguide.backend.tour.infrastructure.persistence.entity.TourEntity
+import java.time.Instant
 import java.time.ZoneId
 
 fun Tour.toEntity(): TourEntity = TourEntity(
@@ -20,6 +21,7 @@ fun Tour.toEntity(): TourEntity = TourEntity(
     status = status,
     rating = rating,
     reviewsCount = reviewsCount,
+    createdAt = Instant.now(), // перезатирается Hibernate (@CreationTimestamp) при реальной вставке
 )
 
 fun TourEntity.toDomain(photos: List<TourPhoto>): Tour = Tour(

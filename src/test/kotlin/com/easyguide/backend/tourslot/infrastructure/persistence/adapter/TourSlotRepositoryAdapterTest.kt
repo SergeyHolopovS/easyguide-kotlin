@@ -12,16 +12,17 @@ import com.easyguide.backend.tourslot.infrastructure.persistence.jpa.TourSlotJpa
 import com.easyguide.backend.user.domain.model.User
 import com.easyguide.backend.user.infrastructure.persistence.adapter.UserRepositoryAdapter
 import com.easyguide.backend.user.infrastructure.persistence.jpa.UserJpaRepository
+import org.hibernate.exception.ConstraintViolationException
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager
 import org.springframework.context.annotation.Import
-import org.springframework.dao.DataIntegrityViolationException
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -90,7 +91,9 @@ class TourSlotRepositoryAdapterTest {
         tourId: UUID,
         capacity: Int = 5,
         bookedSeats: Int = 0,
-        startsAt: Instant = Instant.now().plusSeconds(3600),
+        // Postgres TIMESTAMPTZ хранит с точностью до микросекунд — без truncatedTo round-trip
+        // через БД теряет наносекунды и assertEquals(Instant, Instant) не проходит
+        startsAt: Instant = Instant.now().plusSeconds(3600).truncatedTo(ChronoUnit.MICROS),
     ): TourSlot = TourSlot(
         id = UUID.randomUUID(),
         tourId = tourId,
@@ -170,7 +173,7 @@ class TourSlotRepositoryAdapterTest {
         adapter.save(slot(tourId, startsAt = startsAt))
         entityManager.flush()
 
-        assertFailsWith<DataIntegrityViolationException> {
+        assertFailsWith<ConstraintViolationException> {
             adapter.save(slot(tourId, startsAt = startsAt))
             entityManager.flush()
         }

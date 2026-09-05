@@ -41,3 +41,8 @@ out/
 
 ### Local file storage ###
 /uploads/
+
+### Secrets ###
+.env
+.env.prod
+.env.local

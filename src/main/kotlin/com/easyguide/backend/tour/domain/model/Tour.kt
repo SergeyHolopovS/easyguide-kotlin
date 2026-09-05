@@ -123,6 +123,14 @@ class Tour(
         this.maxPeople = maxPeople
     }
 
+    fun updateRating(average: Double, count: Int) {
+        require(count >= 0) { "Число отзывов не может быть отрицательным" }
+        require(count == 0 || average in 0.0..5.0) { "Рейтинг должен быть в диапазоне от 0 до 5" }
+
+        this.rating = if (count == 0) null else average
+        this.reviewsCount = count
+    }
+
     fun addPhoto(url: String): TourPhoto {
         val photo = TourPhoto(id = UUID.randomUUID(), url = url, sortOrder = mutablePhotos.size)
         mutablePhotos.add(photo)

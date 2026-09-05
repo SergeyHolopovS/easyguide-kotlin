@@ -2,6 +2,7 @@ package com.easyguide.backend.tourslot.infrastructure.persistence.mapper
 
 import com.easyguide.backend.tourslot.domain.model.TourSlot
 import com.easyguide.backend.tourslot.infrastructure.persistence.entity.TourSlotEntity
+import java.time.Instant
 
 fun TourSlot.toEntity(): TourSlotEntity = TourSlotEntity(
     id = id,
@@ -10,6 +11,7 @@ fun TourSlot.toEntity(): TourSlotEntity = TourSlotEntity(
     capacity = capacity,
     bookedSeats = bookedSeats,
     isCancelled = isCancelled,
+    createdAt = Instant.now(), // перезатирается Hibernate (@CreationTimestamp) при реальной вставке
 )
 
 fun TourSlotEntity.toDomain(): TourSlot = TourSlot(

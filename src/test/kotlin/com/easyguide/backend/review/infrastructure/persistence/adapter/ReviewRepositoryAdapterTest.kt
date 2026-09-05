@@ -18,13 +18,13 @@ import com.easyguide.backend.tourslot.infrastructure.persistence.jpa.TourSlotJpa
 import com.easyguide.backend.user.domain.model.User
 import com.easyguide.backend.user.infrastructure.persistence.adapter.UserRepositoryAdapter
 import com.easyguide.backend.user.infrastructure.persistence.jpa.UserJpaRepository
+import org.hibernate.exception.ConstraintViolationException
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager
 import org.springframework.context.annotation.Import
-import org.springframework.dao.DataIntegrityViolationException
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
@@ -191,7 +191,7 @@ class ReviewRepositoryAdapterTest {
         adapter.save(review(tourId, bookingId, persistedUserId(), rating = 5))
         entityManager.flush()
 
-        assertFailsWith<DataIntegrityViolationException> {
+        assertFailsWith<ConstraintViolationException> {
             adapter.save(review(tourId, bookingId, persistedUserId(), rating = 1))
             entityManager.flush()
         }

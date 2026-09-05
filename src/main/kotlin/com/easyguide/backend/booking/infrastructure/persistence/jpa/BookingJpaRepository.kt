@@ -3,6 +3,7 @@ package com.easyguide.backend.booking.infrastructure.persistence.jpa
 import com.easyguide.backend.booking.domain.model.BookingStatus
 import com.easyguide.backend.booking.infrastructure.persistence.entity.BookingEntity
 import com.easyguide.backend.tourslot.infrastructure.persistence.entity.TourSlotEntity
+import org.springframework.data.domain.Limit
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
@@ -24,10 +25,12 @@ interface BookingJpaRepository : JpaRepository<BookingEntity, UUID> {
 
     @Query(
         "SELECT b FROM BookingEntity b, TourSlotEntity s " +
-            "WHERE s.id = b.slotId AND b.status = :status AND s.startsAt < :before"
+            "WHERE s.id = b.slotId AND b.status = :status AND s.startsAt < :before " +
+            "ORDER BY s.startsAt ASC"
     )
     fun findByStatusAndSlotStartsAtBefore(
         @Param("status") status: BookingStatus,
         @Param("before") before: Instant,
+        limit: Limit,
     ): List<BookingEntity>
 }

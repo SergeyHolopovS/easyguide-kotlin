@@ -5,11 +5,11 @@ import com.easyguide.backend.user.domain.model.User
 import com.easyguide.backend.user.infrastructure.persistence.jpa.UserJpaRepository
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager
+import org.hibernate.exception.ConstraintViolationException
 import org.springframework.context.annotation.Import
-import org.springframework.dao.DataIntegrityViolationException
 import java.time.Instant
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -84,7 +84,9 @@ class UserRepositoryAdapterTest {
         adapter.save(user(email = email))
         entityManager.flush()
 
-        assertFailsWith<DataIntegrityViolationException> {
+        // прямой entityManager.flush() не идёт через прокси репозитория, поэтому Spring не транслирует
+        // исключение в DataIntegrityViolationException — долетает нативное исключение Hibernate
+        assertFailsWith<ConstraintViolationException> {
             adapter.save(user(email = email))
             entityManager.flush()
         }

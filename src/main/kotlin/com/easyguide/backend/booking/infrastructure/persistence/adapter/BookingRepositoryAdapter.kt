@@ -7,6 +7,7 @@ import com.easyguide.backend.booking.infrastructure.persistence.jpa.BookingJpaRe
 import com.easyguide.backend.booking.infrastructure.persistence.mapper.toDomain
 import com.easyguide.backend.booking.infrastructure.persistence.mapper.toEntity
 import com.easyguide.backend.booking.infrastructure.persistence.mapper.updateFrom
+import org.springframework.data.domain.Limit
 import org.springframework.stereotype.Repository
 import java.time.Instant
 import java.util.UUID
@@ -27,8 +28,9 @@ class BookingRepositoryAdapter(
     override fun findActiveBySlot(slotId: UUID): List<Booking> =
         jpaRepository.findBySlotIdAndStatusIn(slotId, ACTIVE_STATUSES).map { it.toDomain() }
 
-    override fun findConfirmedFinishedBefore(instant: Instant): List<Booking> =
-        jpaRepository.findByStatusAndSlotStartsAtBefore(BookingStatus.CONFIRMED, instant).map { it.toDomain() }
+    override fun findConfirmedFinishedBefore(instant: Instant, limit: Int): List<Booking> =
+        jpaRepository.findByStatusAndSlotStartsAtBefore(BookingStatus.CONFIRMED, instant, Limit.of(limit))
+            .map { it.toDomain() }
 
     override fun save(booking: Booking): Booking {
         val existing = jpaRepository.findById(booking.id).orElse(null)
