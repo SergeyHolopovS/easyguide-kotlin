@@ -54,10 +54,12 @@ docker compose up --build
 
 Поднимает Postgres и приложение одной командой. API — на `http://localhost:8080`.
 
-Чтобы сразу получить тестовые данные (гиды, туры, брони, отзывы — см. ниже), добавьте профиль:
+По умолчанию `docker-compose.yaml` включает Spring-профиль `local`, поэтому тестовые данные
+(гиды, туры, брони, отзывы — см. ниже) загружаются автоматически. Чтобы поднять дев-окружение
+без них, переопределите профиль:
 
 ```bash
-SPRING_PROFILES_ACTIVE=local docker compose up --build
+SPRING_PROFILES_ACTIVE= docker compose up --build
 ```
 
 ### Прод (self-hosted VPS)
@@ -95,9 +97,10 @@ HTTPS обеспечивает `caddy` — автоматически получ
 
 ## Тестовые данные (профиль `local`)
 
-При запуске с активным Spring-профилем `local` (`SPRING_PROFILES_ACTIVE=local` или
-`--spring.profiles.active=local`) автоматически загружаются тестовые данные —
-`LocalDataSeeder` (`shared/infrastructure/seed`). Сидер идемпотентен: при повторном
+При запуске с активным Spring-профилем `local` (включён по умолчанию в `docker-compose.yaml`;
+также можно задать явно через `SPRING_PROFILES_ACTIVE=local` или `--spring.profiles.active=local`)
+автоматически загружаются тестовые данные — `LocalDataSeeder` (`shared/infrastructure/seed`).
+Сидер идемпотентен: при повторном
 запуске проверяет наличие первого гида по email и, если данные уже загружены, ничего
 не делает.
 

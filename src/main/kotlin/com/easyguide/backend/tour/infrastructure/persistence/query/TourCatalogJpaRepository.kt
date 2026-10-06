@@ -18,7 +18,7 @@ private const val SEARCH_WHERE = """
     AND (:category IS NULL OR t.category = :category)
     AND (:priceMin IS NULL OR t.price >= :priceMin)
     AND (:priceMax IS NULL OR t.price <= :priceMax)
-    AND (:q IS NULL OR lower(t.title) LIKE lower(concat('%', :q, '%')))
+    AND (:q IS NULL OR lower(t.title) LIKE lower(concat('%', cast(:q AS string), '%')))
     AND (
         :date IS NULL
         OR EXISTS (
