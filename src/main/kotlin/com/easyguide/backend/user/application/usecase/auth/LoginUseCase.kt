@@ -1,7 +1,6 @@
 package com.easyguide.backend.user.application.usecase.auth
 
 import com.easyguide.backend.shared.application.port.PasswordHasher
-import com.easyguide.backend.shared.application.port.TokenIssuer
 import com.easyguide.backend.user.application.dto.AuthResult
 import com.easyguide.backend.user.application.dto.LoginCommand
 import com.easyguide.backend.user.application.dto.toResult
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Service
 class LoginUseCase(
     private val userRepository: UserRepository,
     private val passwordHasher: PasswordHasher,
-    private val tokenIssuer: TokenIssuer,
+    private val authTokensIssuer: AuthTokensIssuer,
 ) {
 
     fun execute(command: LoginCommand): AuthResult {
@@ -24,8 +23,8 @@ class LoginUseCase(
             throw InvalidCredentialsException()
         }
 
-        val token = tokenIssuer.issue(user.id)
+        val tokens = authTokensIssuer.issue(user.id)
 
-        return AuthResult(token = token, user = user.toResult())
+        return AuthResult(token = tokens.accessToken, refreshToken = tokens.refreshToken, user = user.toResult())
     }
 }

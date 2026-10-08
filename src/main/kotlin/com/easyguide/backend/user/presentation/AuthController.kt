@@ -5,9 +5,12 @@ import com.easyguide.backend.shared.presentation.docs.ApiTags
 import com.easyguide.backend.shared.presentation.security.CurrentUserId
 import com.easyguide.backend.user.application.usecase.auth.GetCurrentUserUseCase
 import com.easyguide.backend.user.application.usecase.auth.LoginUseCase
+import com.easyguide.backend.user.application.usecase.auth.LogoutUseCase
+import com.easyguide.backend.user.application.usecase.auth.RefreshTokenUseCase
 import com.easyguide.backend.user.application.usecase.auth.RegisterUserUseCase
 import com.easyguide.backend.user.presentation.dto.AuthResponse
 import com.easyguide.backend.user.presentation.dto.LoginRequest
+import com.easyguide.backend.user.presentation.dto.RefreshTokenRequest
 import com.easyguide.backend.user.presentation.dto.RegisterRequest
 import com.easyguide.backend.user.presentation.dto.UserResponse
 import com.easyguide.backend.user.presentation.dto.toCommand
@@ -15,10 +18,12 @@ import com.easyguide.backend.user.presentation.dto.toResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
@@ -29,6 +34,8 @@ class AuthController(
     private val registerUserUseCase: RegisterUserUseCase,
     private val loginUseCase: LoginUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val refreshTokenUseCase: RefreshTokenUseCase,
+    private val logoutUseCase: LogoutUseCase,
 ) {
 
     @Operation(
@@ -45,6 +52,22 @@ class AuthController(
     @PostMapping("/login")
     fun login(@Valid @RequestBody request: LoginRequest): AuthResponse =
         loginUseCase.execute(request.toCommand()).toResponse()
+
+    @Operation(
+        summary = "Обновление токенов",
+        description = "Обменивает refresh-токен на новую пару access + refresh. Старый refresh-токен отзывается; " +
+            "его повторное использование завершает все сессии пользователя.",
+    )
+    @ApiError(401, "Refresh-токен недействителен, отозван или истёк")
+    @PostMapping("/refresh")
+    fun refresh(@Valid @RequestBody request: RefreshTokenRequest): AuthResponse =
+        refreshTokenUseCase.execute(request.toCommand()).toResponse()
+
+    @Operation(summary = "Выход", description = "Отзывает refresh-токен. Access-токен остаётся валидным до истечения срока.")
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun logout(@Valid @RequestBody request: RefreshTokenRequest) =
+        logoutUseCase.execute(request.toCommand())
 
     @Operation(summary = "Текущий пользователь", description = "Возвращает профиль владельца токена.")
     @GetMapping("/me")

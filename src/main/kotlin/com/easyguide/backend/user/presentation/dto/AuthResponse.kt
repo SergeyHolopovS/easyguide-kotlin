@@ -7,11 +7,14 @@ import io.swagger.v3.oas.annotations.media.Schema
 data class AuthResponse(
     @field:Schema(description = "JWT для заголовка `Authorization: Bearer <token>`")
     val token: String,
+    @field:Schema(description = "Refresh-токен для `POST /api/auth/refresh`. Одноразовый: при обновлении выдаётся новый")
+    val refreshToken: String,
     @field:Schema(description = "Профиль пользователя")
     val user: UserResponse,
 )
 
 fun AuthResult.toResponse(): AuthResponse = AuthResponse(
     token = token,
+    refreshToken = refreshToken,
     user = user.toResponse(),
 )

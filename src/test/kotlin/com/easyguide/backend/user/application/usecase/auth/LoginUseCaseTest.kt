@@ -1,10 +1,13 @@
 package com.easyguide.backend.user.application.usecase.auth
 
+import com.easyguide.backend.shared.application.port.FakeClock
 import com.easyguide.backend.shared.application.port.FakePasswordHasher
+import com.easyguide.backend.shared.application.port.FakeRefreshTokenGenerator
 import com.easyguide.backend.shared.application.port.FakeTokenIssuer
 import com.easyguide.backend.user.application.dto.LoginCommand
 import com.easyguide.backend.user.domain.exception.InvalidCredentialsException
 import com.easyguide.backend.user.domain.model.User
+import com.easyguide.backend.user.domain.repository.InMemoryRefreshTokenRepository
 import com.easyguide.backend.user.domain.repository.InMemoryUserRepository
 import java.time.Instant
 import java.util.UUID
@@ -17,7 +20,11 @@ class LoginUseCaseTest {
     private val userRepository = InMemoryUserRepository()
     private val passwordHasher = FakePasswordHasher()
     private val tokenIssuer = FakeTokenIssuer()
-    private val useCase = LoginUseCase(userRepository, passwordHasher, tokenIssuer)
+    private val refreshTokenRepository = InMemoryRefreshTokenRepository()
+    private val authTokensIssuer = AuthTokensIssuer(
+        tokenIssuer, FakeRefreshTokenGenerator(), refreshTokenRepository, FakeClock(), refreshExpirationDays = 30,
+    )
+    private val useCase = LoginUseCase(userRepository, passwordHasher, authTokensIssuer)
 
     private fun registerUser(email: String, rawPassword: String): User {
         val user = User(
@@ -44,6 +51,8 @@ class LoginUseCaseTest {
 
         assertEquals(user.id, result.user.id)
         assertEquals("token:${user.id}", result.token)
+        assertEquals("refresh-1", result.refreshToken)
+        assertEquals("hashed:refresh-1", refreshTokenRepository.all().single().tokenHash)
     }
 
     @Test

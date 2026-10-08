@@ -2,7 +2,6 @@ package com.easyguide.backend.user.application.usecase.auth
 
 import com.easyguide.backend.shared.application.port.Clock
 import com.easyguide.backend.shared.application.port.PasswordHasher
-import com.easyguide.backend.shared.application.port.TokenIssuer
 import com.easyguide.backend.user.application.dto.AuthResult
 import com.easyguide.backend.user.application.dto.RegisterUserCommand
 import com.easyguide.backend.user.application.dto.toResult
@@ -16,7 +15,7 @@ import java.util.UUID
 class RegisterUserUseCase(
     private val userRepository: UserRepository,
     private val passwordHasher: PasswordHasher,
-    private val tokenIssuer: TokenIssuer,
+    private val authTokensIssuer: AuthTokensIssuer,
     private val clock: Clock,
 ) {
 
@@ -40,8 +39,8 @@ class RegisterUserUseCase(
         )
 
         val saved = userRepository.save(user)
-        val token = tokenIssuer.issue(saved.id)
+        val tokens = authTokensIssuer.issue(saved.id)
 
-        return AuthResult(token = token, user = saved.toResult())
+        return AuthResult(token = tokens.accessToken, refreshToken = tokens.refreshToken, user = saved.toResult())
     }
 }

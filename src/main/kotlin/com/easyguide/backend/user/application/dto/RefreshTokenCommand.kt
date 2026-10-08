@@ -1,7 +1,5 @@
 package com.easyguide.backend.user.application.dto
 
-data class AuthResult(
-    val token: String,
+data class RefreshTokenCommand(
     val refreshToken: String,
-    val user: UserResult,
 )

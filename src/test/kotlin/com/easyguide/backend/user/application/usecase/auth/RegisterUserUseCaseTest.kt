@@ -2,9 +2,11 @@ package com.easyguide.backend.user.application.usecase.auth
 
 import com.easyguide.backend.shared.application.port.FakeClock
 import com.easyguide.backend.shared.application.port.FakePasswordHasher
+import com.easyguide.backend.shared.application.port.FakeRefreshTokenGenerator
 import com.easyguide.backend.shared.application.port.FakeTokenIssuer
 import com.easyguide.backend.user.application.dto.RegisterUserCommand
 import com.easyguide.backend.user.domain.exception.EmailAlreadyTakenException
+import com.easyguide.backend.user.domain.repository.InMemoryRefreshTokenRepository
 import com.easyguide.backend.user.domain.repository.InMemoryUserRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,7 +19,10 @@ class RegisterUserUseCaseTest {
     private val passwordHasher = FakePasswordHasher()
     private val tokenIssuer = FakeTokenIssuer()
     private val clock = FakeClock()
-    private val useCase = RegisterUserUseCase(userRepository, passwordHasher, tokenIssuer, clock)
+    private val authTokensIssuer = AuthTokensIssuer(
+        tokenIssuer, FakeRefreshTokenGenerator(), InMemoryRefreshTokenRepository(), clock, refreshExpirationDays = 30,
+    )
+    private val useCase = RegisterUserUseCase(userRepository, passwordHasher, authTokensIssuer, clock)
 
     private fun command(email: String = "ivan@example.com") = RegisterUserCommand(
         name = "Иван Иванов",
@@ -35,6 +40,7 @@ class RegisterUserUseCaseTest {
         assertEquals("hashed:secret123", saved?.passwordHash)
         assertNotEquals("secret123", saved?.passwordHash)
         assertEquals("token:${saved?.id}", result.token)
+        assertEquals("refresh-1", result.refreshToken)
         assertEquals(saved?.id, result.user.id)
         assertEquals(saved?.email, result.user.email)
     }
